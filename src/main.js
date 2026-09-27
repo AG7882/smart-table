@@ -8,7 +8,7 @@ import { processFormData } from "./lib/utils.js";
 
 import { initTable } from "./components/table.js";
 // @todo: подключение
-import { initSorting } from "./components/sorting.js"; 
+import { initSorting } from "./components/sorting.js";
 import { initPagination } from "./components/pagination.js";
 // Исходные данные используемые в render()
 const { data, ...indexes } = initData(sourceData);
@@ -34,9 +34,12 @@ function collectState() {
  * Перерисовка состояния таблицы при любых изменениях
  * @param {HTMLButtonElement?} action
  */
+
+
+
 function render(action) {
-  let state = collectState(); // состояние полей из таблицы
-  let result = [...data]; // копируем для последующего изменения
+  let state = collectState();
+  let result = [...data];
   if (action && action.name === "sort") {
     const clickedField = action.dataset.field;
 
@@ -55,7 +58,7 @@ function render(action) {
         if (current === "asc") {
           nextValue = "desc";
         } else if (current === "desc") {
-          nextValue = "none"; // или 'asc', если нужно циклично
+          nextValue = "none";
         } else {
           nextValue = "asc";
         }
