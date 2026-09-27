@@ -10,6 +10,8 @@ import { initTable } from "./components/table.js";
 // @todo: подключение
 import { initSorting } from "./components/sorting.js";
 import { initPagination } from "./components/pagination.js";
+import { initFiltering } from "./components/filtering.js";
+import { initSearching } from "./components/searching.js";
 // Исходные данные используемые в render()
 const { data, ...indexes } = initData(sourceData);
 
@@ -34,8 +36,6 @@ function collectState() {
  * Перерисовка состояния таблицы при любых изменениях
  * @param {HTMLButtonElement?} action
  */
-
-
 
 function render(action) {
   let state = collectState();
@@ -110,3 +110,12 @@ const applyPagination = initPagination(
 
 const appRoot = document.querySelector("#app");
 appRoot.appendChild(sampleTable.container);
+
+const searchInput = sampleTable.header.elements.searchField;
+const applySearching = initSearching(searchInput);
+
+const filterContainer = sampleTable.header.elements.filters;
+
+const applyFiltering = initFiltering(sampleTable.header.elements, indexes);
+
+render();

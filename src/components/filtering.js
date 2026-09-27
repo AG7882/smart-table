@@ -3,7 +3,9 @@ import { createComparison, defaultRules } from "../lib/compare.js";
 const compare = createComparison(defaultRules);
 
 export function initFiltering(elements, indexes) {
+
   Object.keys(indexes).forEach((elementName) => {
+   if (!elements[elementName]) return;
     elements[elementName].append(
       ...Object.values(indexes[elementName]).map((name) => {
         const option = document.createElement("option");
