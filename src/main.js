@@ -1,28 +1,33 @@
-import './fonts/ys-display/fonts.css'
-import './style.css'
+import "./fonts/ys-display/fonts.css";
+import "./style.css";
 
-import {data as sourceData} from "./data/dataset_1.js";
+import { data as sourceData } from "./data/dataset_1.js";
 
-import {initData} from "./data.js";
-import {processFormData} from "./lib/utils.js";
+import { initData } from "./data.js";
+import { processFormData } from "./lib/utils.js";
 
-import {initTable} from "./components/table.js";
+import { initTable } from "./components/table.js";
 // @todo: подключение
-
-
+import { initSorting } from "./components/sorting.js"; 
+import { initPagination } from "./components/pagination.js";
 // Исходные данные используемые в render()
-const {data, ...indexes} = initData(sourceData);
+const { data, ...indexes } = initData(sourceData);
 
 /**
  * Сбор и обработка полей из таблицы
  * @returns {Object}
  */
 function collectState() {
-    const state = processFormData(new FormData(sampleTable.container));
+  const state = processFormData(new FormData(sampleTable.container));
 
-    return {
-        ...state
-    };
+  const rowsPerPage = parseInt(state.rowsPerPage);
+  const page = parseInt(state.page ?? 1);
+
+  return {
+    ...state,
+    rowsPerPage,
+    page,
+  };
 }
 
 /**
@@ -30,25 +35,75 @@ function collectState() {
  * @param {HTMLButtonElement?} action
  */
 function render(action) {
-    let state = collectState(); // состояние полей из таблицы
-    let result = [...data]; // копируем для последующего изменения
-    // @todo: использование
+  let state = collectState(); // состояние полей из таблицы
+  let result = [...data]; // копируем для последующего изменения
+  if (action && action.name === "sort") {
+    const clickedField = action.dataset.field;
 
+    if (state.field === clickedField) {
+      state.order = state.order === "asc" ? "desc" : "asc";
+    } else {
+      state.field = clickedField;
+      state.order = "asc";
+    }
 
-    sampleTable.render(result)
+    columns.forEach((col) => {
+      if (col.dataset.field === clickedField) {
+        const current = col.dataset.value;
+        let nextValue;
+
+        if (current === "asc") {
+          nextValue = "desc";
+        } else if (current === "desc") {
+          nextValue = "none"; // или 'asc', если нужно циклично
+        } else {
+          nextValue = "asc";
+        }
+
+        col.dataset.value = nextValue;
+      } else {
+        col.dataset.value = "none";
+      }
+    });
+  }
+
+  result = applySorting(result, state, action);
+
+  result = applyPagination(result, state, action);
+
+  sampleTable.render(result);
 }
 
-const sampleTable = initTable({
-    tableTemplate: 'table',
-    rowTemplate: 'row',
-    before: [],
-    after: []
-}, render);
+const sampleTable = initTable(
+  {
+    tableTemplate: "table",
+    rowTemplate: "row",
+    before: ["header"],
+    after: ["pagination"],
+  },
+  render,
+);
 
 // @todo: инициализация
+const columns = [
+  sampleTable.header.elements.sortByDate,
+  sampleTable.header.elements.sortByTotal,
+];
 
+const applySorting = initSorting(columns);
 
-const appRoot = document.querySelector('#app');
+const applyPagination = initPagination(
+  sampleTable.pagination.elements, // передаём сюда элементы пагинации, найденные в шаблоне
+  (el, page, isCurrent) => {
+    // и колбэк, чтобы заполнять кнопки страниц данными
+    const input = el.querySelector("input");
+    const label = el.querySelector("span");
+    input.value = page;
+    input.checked = isCurrent;
+    label.textContent = page;
+    return el;
+  },
+);
+
+const appRoot = document.querySelector("#app");
 appRoot.appendChild(sampleTable.container);
-
-render();

@@ -1,11 +1,18 @@
-import {rules, createComparison} from "../lib/compare.js";
-
+import { rules, createComparison } from "../lib/compare.js";
 
 export function initSearching(searchField) {
-    // @todo: #5.1 — настроить компаратор
+  return (data, state, action) => {
+    const query = (state.query || "").toLowerCase().trim();
 
-    return (data, state, action) => {
-        // @todo: #5.2 — применить компаратор
-        return data;
+    if (!query) {
+      return data;
     }
+
+    return data.filter((row) => {
+      return Object.values(row).some((value) => {
+        const text = String(value).toLowerCase();
+        return text.includes(query);
+      });
+    });
+  };
 }
