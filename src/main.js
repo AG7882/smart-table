@@ -81,12 +81,11 @@ const sampleTable = initTable(
   {
     tableTemplate: "table",
     rowTemplate: "row",
-    before: ["search","header"],
+    before: ["search", "header", "filter"],
     after: ["pagination"],
   },
   render,
 );
-
 
 // @todo: инициализация
 const columns = [
