@@ -116,6 +116,7 @@ const applySearching = initSearching(searchInput);
 const filterContainer = sampleTable.header.elements.filters;
 
 const applyFiltering = initFiltering(sampleTable.header.elements, indexes);
+render();
 
 const clearButtons = document.querySelectorAll(
   '[data-action="clear"], button[name="clear"]',
