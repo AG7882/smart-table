@@ -39,6 +39,7 @@ function collectState() {
 
 function render(action) {
   let state = collectState();
+ 
   let result = [...data];
   if (action && action.name === "sort") {
     const clickedField = action.dataset.field;
@@ -71,9 +72,9 @@ function render(action) {
   }
 
   result = applySorting(result, state, action);
-
+ 
   result = applyPagination(result, state, action);
-
+ 
   sampleTable.render(result);
 }
 
@@ -113,9 +114,31 @@ appRoot.appendChild(sampleTable.container);
 const searchInput = sampleTable.header.elements.searchField;
 const applySearching = initSearching(searchInput);
 
-const filterContainer = sampleTable.header.elements.filters;
+/*const filterContainer = sampleTable.header.elements.filters;
+console.log('📦 indexes:', indexes);
+console.log('📦 elements:', sampleTable.header.elements); 
+const applyFiltering = initFiltering(sampleTable.header.elements, indexes);*/
 
-const applyFiltering = initFiltering(sampleTable.header.elements, indexes);
+const filterContainer =
+  (sampleTable.filter && sampleTable.filter.container) ||
+  (sampleTable.header && sampleTable.header.container) ||
+  sampleTable.container;
+
+// 2. Ищем элементы внутри найденного контейнера
+const filterElements = {
+  seller:
+    filterContainer.querySelector('select[name="seller"]') ||
+    filterContainer.querySelector('select[name="sellerField"]') ||
+    filterContainer.querySelector('[data-field="seller"]'),
+
+  customer:
+    filterContainer.querySelector('select[name="customer"]') ||
+    filterContainer.querySelector('select[name="customerField"]') ||
+    filterContainer.querySelector('[data-field="customer"]'),
+};
+
+// 3. Передаем объект в инициализацию фильтрации
+const applyFiltering = initFiltering(filterElements, indexes);
 render();
 
 const clearButtons = document.querySelectorAll(
