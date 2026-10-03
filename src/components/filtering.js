@@ -20,6 +20,17 @@ export function initFiltering(elements, indexes) {
   });
 
   return (data, state, action) => {
+    // @todo: #4.2 — обработать очистку поля
+    if (action === "clear") {
+      const fieldToClear = action.field;
+      const newState = { ...state };
+
+      // Сбрасываем значение нужного поля в пустую строку
+      if (newState.hasOwnProperty(fieldToClear)) {
+        newState[fieldToClear] = "";
+      }
+    }
+    // @todo: #4.5 — отфильтровать данные используя компаратор
     return data.filter((row) => compare(row, state));
   };
 }
