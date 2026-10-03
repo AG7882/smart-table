@@ -96,9 +96,8 @@ const columns = [
 const applySorting = initSorting(columns);
 
 const applyPagination = initPagination(
-  sampleTable.pagination.elements, // передаём сюда элементы пагинации, найденные в шаблоне
+  sampleTable.pagination.elements,
   (el, page, isCurrent) => {
-    // и колбэк, чтобы заполнять кнопки страниц данными
     const input = el.querySelector("input");
     const label = el.querySelector("span");
     input.value = page;
@@ -117,5 +116,29 @@ const applySearching = initSearching(searchInput);
 const filterContainer = sampleTable.header.elements.filters;
 
 const applyFiltering = initFiltering(sampleTable.header.elements, indexes);
+
+const clearButtons = document.querySelectorAll(
+  '[data-action="clear"], button[name="clear"]',
+);
+
+clearButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    const realButton = event.target.closest("button");
+    if (!realButton) return;
+
+    if (realButton.name !== "clear" && realButton.dataset.action !== "clear") {
+      return;
+    }
+
+    const parent = realButton.parentElement;
+    const input = parent.querySelector("input");
+
+    if (input) {
+      input.value = "";
+    }
+
+    render();
+  });
+});
 
 render();
