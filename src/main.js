@@ -8,10 +8,11 @@ import { processFormData } from "./lib/utils.js";
 
 import { initTable } from "./components/table.js";
 // @todo: подключение
-import { initSorting } from "./components/sorting.js";
 import { initPagination } from "./components/pagination.js";
+import { initSorting } from "./components/sorting.js";
 import { initFiltering } from "./components/filtering.js";
 import { initSearching } from "./components/searching.js";
+
 // Исходные данные используемые в render()
 const { data, ...indexes } = initData(sourceData);
 
@@ -22,10 +23,11 @@ const { data, ...indexes } = initData(sourceData);
 function collectState() {
   const state = processFormData(new FormData(sampleTable.container));
 
-  const rowsPerPage = parseInt(state.rowsPerPage);
-  const page = parseInt(state.page ?? 1);
+  const rowsPerPage = parseInt(state.rowsPerPage); // приведём количество страниц к числу
+  const page = parseInt(state.page ?? 1); // номер страницы по умолчанию 1 и тоже число
 
   return {
+    // расширьте существующий return вот так
     ...state,
     rowsPerPage,
     page,
@@ -36,45 +38,15 @@ function collectState() {
  * Перерисовка состояния таблицы при любых изменениях
  * @param {HTMLButtonElement?} action
  */
-
 function render(action) {
-  let state = collectState();
+  let state = collectState(); // состояние полей из таблицы
+  let result = [...data]; // копируем для последующего изменения
+  // @todo: использование
 
-  let result = [...data];
-  if (action && action.name === "sort") {
-    const clickedField = action.dataset.field;
-
-    if (state.field === clickedField) {
-      state.order = state.order === "asc" ? "desc" : "asc";
-    } else {
-      state.field = clickedField;
-      state.order = "asc";
-    }
-
-    columns.forEach((col) => {
-      if (col.dataset.field === clickedField) {
-        const current = col.dataset.value;
-        let nextValue;
-
-        if (current === "asc") {
-          nextValue = "desc";
-        } else if (current === "desc") {
-          nextValue = "none";
-        } else {
-          nextValue = "asc";
-        }
-
-        col.dataset.value = nextValue;
-      } else {
-        col.dataset.value = "none";
-      }
-    });
-  }
-
+  result = applySearching(result, state, action);
+  result = applyFiltering(result, state, action);
   result = applySorting(result, state, action);
-
   result = applyPagination(result, state, action);
-
   sampleTable.render(result);
 }
 
@@ -89,16 +61,11 @@ const sampleTable = initTable(
 );
 
 // @todo: инициализация
-const columns = [
-  sampleTable.header.elements.sortByDate,
-  sampleTable.header.elements.sortByTotal,
-];
-
-const applySorting = initSorting(columns);
 
 const applyPagination = initPagination(
-  sampleTable.pagination.elements,
+  sampleTable.pagination.elements, // передаём сюда элементы пагинации, найденные в шаблоне
   (el, page, isCurrent) => {
+    // и колбэк, чтобы заполнять кнопки страниц данными
     const input = el.querySelector("input");
     const label = el.querySelector("span");
     input.value = page;
@@ -108,60 +75,20 @@ const applyPagination = initPagination(
   },
 );
 
+const applySearching = initSearching("search");
+
+const applyFiltering = initFiltering(sampleTable.filter.elements, {
+  // передаём элементы фильтра
+  searchBySeller: indexes.sellers, // для элемента с именем searchBySeller устанавливаем массив продавцов
+});
+
+const applySorting = initSorting([
+  // Нам нужно передать сюда массив элементов, которые вызывают сортировку, чтобы изменять их визуальное представление
+  sampleTable.header.elements.sortByDate,
+  sampleTable.header.elements.sortByTotal,
+]);
+
 const appRoot = document.querySelector("#app");
 appRoot.appendChild(sampleTable.container);
-
-const searchInput = sampleTable.header.elements.searchField;
-const applySearching = initSearching(searchInput);
-
-const filterContainer = sampleTable.header.elements.filters;
-
-const applyFiltering = initFiltering(sampleTable.header.elements, indexes);
-
-/*const filterContainer =
-  (sampleTable.filter && sampleTable.filter.container) ||
-  (sampleTable.header && sampleTable.header.container) ||
-  sampleTable.container;
-
-// 2. Ищем элементы внутри найденного контейнера
-const filterElements = {
-  seller:
-    filterContainer.querySelector('select[name="seller"]') ||
-    filterContainer.querySelector('select[name="sellerField"]') ||
-    filterContainer.querySelector('[data-field="seller"]'),
-
-  customer:
-    filterContainer.querySelector('select[name="customer"]') ||
-    filterContainer.querySelector('select[name="customerField"]') ||
-    filterContainer.querySelector('[data-field="customer"]'),
-};
-
-// 3. Передаем объект в инициализацию фильтрации
-const applyFiltering = initFiltering(filterElements, indexes);*/
-render();
-
-const clearButtons = document.querySelectorAll(
-  '[data-action="clear"], button[name="clear"]',
-);
-
-clearButtons.forEach((button) => {
-  button.addEventListener("click", (event) => {
-    const realButton = event.target.closest("button");
-    if (!realButton) return;
-
-    if (realButton.name !== "clear" && realButton.dataset.action !== "clear") {
-      return;
-    }
-
-    const parent = realButton.parentElement;
-    const input = parent.querySelector("input");
-
-    if (input) {
-      input.value = "";
-    }
-
-    render();
-  });
-});
 
 render();
